@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Japanese North China Area Army Map, September 1942</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  :root {
+    --occupied:      #1f78b4;
+    --occupied-fill: #6baed6;
+    --resistance:      #e25254;
+    --resistance-fill: #e2696a;
+    --attack:        #a91315;
+    --ink:           #1a1a1a;
+    --panel:         rgba(255,255,255,.94);
+  }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Helvetica Neue", "Hiragino Sans", "Noto Sans CJK SC", sans-serif;
+    color: var(--ink);
+  }
+  #map { position: absolute; inset: 0; background: #eceff1; }
+
+  /* --- title bar ------------------------------------------------------- */
+  #title {
+    position: absolute; top: 10px; left: 50px; z-index: 700;
+    max-width: min(520px, calc(100vw - 120px));
+    background: var(--panel); border-radius: 6px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.3); padding: 9px 14px;
+  }
+  #title h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: .1px; }
+  #title .zh { margin: 2px 0 0; font-size: 14px; color: #444; }
+  #title .src { margin: 4px 0 0; font-size: 11.5px; color: #666; }
+  #source { margin-top: 6px; font-size: 11.5px; color: #555; }
+  #source summary {
+    cursor: pointer; color: #1f78b4; font-weight: 600;
+    list-style-position: outside;
+  }
+  #source p { margin: 6px 0 0; line-height: 1.4; }
+  #source a { color: #1f78b4; }
+
+  /* --- legend ---------------------------------------------------------- */
+  .legend {
+    background: var(--panel); border-radius: 6px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.3);
+    padding: 10px 12px; max-width: 230px; line-height: 1.35;
+  }
+  .legend h2 {
+    margin: 0 0 6px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .6px; color: #555;
+  }
+  .legend h2:not(:first-child) { margin-top: 12px; }
+  .legend .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+  .legend .swatch {
+    width: 20px; height: 12px; flex: 0 0 20px; border-radius: 2px;
+  }
+  .legend .dot-cell {
+    width: 20px; flex: 0 0 20px; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .legend .dot {
+    background: var(--attack); border: 1.5px solid #fff;
+    border-radius: 50%; box-sizing: content-box;
+  }
+  .legend .city-dot {
+    width: 8px; height: 8px; background: #000;
+    border: 1.5px solid #fff; border-radius: 50%;
+  }
+  .legend .note { font-size: 11px; color: #666; margin-top: 6px; }
+
+  /* --- city labels ----------------------------------------------------- */
+  /* Strip Leaflet's tooltip chrome so labels sit on the map as haloed text. */
+  .leaflet-tooltip.city-label {
+    background: none; border: none; box-shadow: none;
+    padding: 0; margin: 0; border-radius: 0;
+    font-size: 11.5px; font-weight: 600; color: #000; white-space: nowrap;
+    text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff,
+                 0 0 2px #fff, 0 0 2px #fff;
+  }
+  .leaflet-tooltip.city-label::before { display: none; }   /* no callout arrow */
+  .city-label .alt { font-weight: 500; color: #222; }
+
+  .leaflet-popup-content { font-size: 13px; }
+  .leaflet-popup-content b { font-size: 14px; }
+  .leaflet-popup-content .zh { color: #444; }
+  .leaflet-popup-content .note { color: #555; font-size: 12px; margin-top: 4px; }
+
+  @media (max-width: 640px) {
+    #title { left: 10px; top: 60px; }
+    .legend { max-width: 170px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="title">
+  <h1>Japanese North China Area Army Map — September 1942</h1>
+  <p class="zh">北支那方面軍占拠地域内治安概況</p>
+  <p class="src">Pan and zoom to explore. Use the layer switcher (top right) to
+     change the base map or turn layers on and off.</p>
+  <details id="source">
+    <summary>Source &amp; licence</summary>
+    <p>The original map is 付図第五「北支那方面軍占拠地域内治安概況（昭和十七年九月中）」,
+       an appendix to 防衛庁防衛研修所戦史室 編『北支の治安戦＜2＞』
+       (戦史叢書 第50巻, 東京: 朝雲新聞社, 1971).</p>
+    <p>The volume has been scanned and can be read online at the National Institute
+       for Defense Studies (防衛省防衛研究所):
+       <a href="https://www.nids.mod.go.jp/military_history_search/SoshoView?kanno=050"
+          target="_blank" rel="noopener">戦史叢書第050巻 北支の治安戦＜2＞</a> —
+       the map itself is
+       <a href="https://www.nids.mod.go.jp/military_history_search/SoshoAppendixView?no=050&amp;f=050_332.jpg"
+          target="_blank" rel="noopener">付図第五</a>.</p>
+    <p>No copyright is claimed over the original map or over this website: both are
+       treated as public domain. Attribution is asked, however, for the georeferencing
+       and digitisation work behind the layers shown here — Konrad M. Lawson.</p>
+  </details>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+/* ------------------------------------------------------------------ map -- */
+const map = L.map('map', { zoomControl: true, preferCanvas: false })
+             .setView([37.6, 115.6], 6);
+L.control.scale({ imperial: false }).addTo(map);
+
+/* --------------------------------------------------------------- basemaps */
+// OSM's tile usage policy requires tile requests to carry a valid Referer,
+// so the referrer policy is set explicitly rather than left to the browser.
+const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+const cartoLight = L.tileLayer(
+  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19,
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    attribution: osmAttr + ' &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  });
+
+const osmStandard = L.tileLayer(
+  'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    attribution: osmAttr
+  });
+
+const esriSatellite = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics and the GIS User Community'
+  });
+
+cartoLight.addTo(map);
+
+/* ------------------------------------------------------- graduated symbols */
+// Class breaks and marker sizes are taken from the QGIS layer style:
+// graduated by "strength", 6 classes on a log scale, sizes 1.7-4.3 mm.
+const MM_PER_PX = 96 / 25.4;                 // QGIS renders mm at 96 dpi
+const ATTACK_CLASSES = [
+  { lower:    5, upper:    31.622777, mm: 1.70, label: '5 – 32' },
+  { lower:   31.622777, upper:   100, mm: 2.22, label: '32 – 100' },
+  { lower:  100, upper:   316.227766, mm: 2.74, label: '100 – 316' },
+  { lower:  316.227766, upper:  1000, mm: 3.26, label: '316 – 1,000' },
+  { lower: 1000, upper:  3162.277660, mm: 3.78, label: '1,000 – 3,162' },
+  { lower: 3162.277660, upper: 10000, mm: 4.30, label: '3,162 – 10,000' }
+];
+ATTACK_CLASSES.forEach(c => c.radius = (c.mm * MM_PER_PX) / 2);
+
+function attackClass(strength) {
+  for (const c of ATTACK_CLASSES) {
+    if (strength >= c.lower && strength <= c.upper) return c;
+  }
+  return strength < ATTACK_CLASSES[0].lower
+       ? ATTACK_CLASSES[0]
+       : ATTACK_CLASSES[ATTACK_CLASSES.length - 1];
+}
+
+/* ------------------------------------------------------------- city labels */
+const esc = s => String(s).replace(/[&<>"]/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// "Pinyin (period name 傳統漢字)" — the alt name is the form the place went by
+// in 1942, the hanzi are given in traditional characters.
+function cityLabel(p) {
+  const inner = [p.name_alt, p.name_zh_trad].filter(Boolean).join(' ');
+  return esc(p.name_en) + (inner ? ' <span class="alt">(' + esc(inner) + ')</span>' : '');
+}
+
+/* ----------------------------------------------------------------- layers  */
+const layers = {};
+const order  = ['occupied', 'resistance', 'attacks', 'settlements'];
+
+const defs = {
+  occupied: {
+    file: 'data/japanese-occupied.geojson',
+    build: gj => L.geoJSON(gj, {
+      style: { color: '#1f78b4', weight: 1,
+               fillColor: '#6baed6', fillOpacity: 0.45 }
+    })
+  },
+  resistance: {
+    file: 'data/resistance-areas.geojson',
+    build: gj => L.geoJSON(gj, {
+      style: { color: '#e25254', weight: 1,
+               fillColor: '#e2696a', fillOpacity: 0.45 }
+    })
+  },
+  attacks: {
+    file: 'data/attacks.geojson',
+    build: gj => L.geoJSON(gj, {
+      pointToLayer: (f, latlng) => {
+        const c = attackClass(f.properties.strength);
+        return L.circleMarker(latlng, {
+          radius: c.radius, color: '#ffffff', weight: 1.5,
+          fillColor: '#a91315', fillOpacity: 1
+        });
+      },
+      onEachFeature: (f, lyr) => {
+        const s = f.properties.strength;
+        lyr.bindPopup('<b>Resistance attack</b><br>Strength: ' +
+                      s.toLocaleString() + '<br>Class: ' +
+                      esc(attackClass(s).label));
+      }
+    })
+  },
+  settlements: {
+    file: 'data/settlements.geojson',
+    build: gj => L.geoJSON(gj, {
+      pointToLayer: (f, latlng) => L.circleMarker(latlng, {
+        radius: 4, color: '#ffffff', weight: 1.5,
+        fillColor: '#000000', fillOpacity: 1
+      }),
+      onEachFeature: (f, lyr) => {
+        const p = f.properties;
+        lyr.bindTooltip(cityLabel(p), {
+          permanent: true, direction: 'right', offset: [7, 0],
+          className: 'city-label', opacity: 1
+        });
+        lyr.bindPopup(
+          '<b>' + esc(p.name_en) + '</b>' +
+          (p.name_alt ? ' &middot; ' + esc(p.name_alt) : '') +
+          '<br><span class="zh">' + esc(p.name_zh_trad) +
+          (p.name_zh && p.name_zh !== p.name_zh_trad ? ' / ' + esc(p.name_zh) : '') +
+          '</span>' +
+          (p.note ? '<div class="note">' + esc(p.note) + '</div>' : '')
+        );
+      }
+    })
+  }
+};
+
+Promise.all(order.map(k =>
+  fetch(defs[k].file)
+    .then(r => { if (!r.ok) throw new Error(defs[k].file + ': ' + r.status); return r.json(); })
+    .then(gj => { layers[k] = defs[k].build(gj); })
+)).then(() => {
+  order.forEach(k => layers[k].addTo(map));   // drawn bottom to top
+
+  L.control.layers(
+    {
+      'CARTO Light':     cartoLight,
+      'OpenStreetMap':   osmStandard,
+      'Esri Satellite':  esriSatellite
+    },
+    {
+      '10 &nbsp;Japanese-occupied territory': layers.occupied,
+      '9 &nbsp;&nbsp;Resistance areas':        layers.resistance,
+      '5 &nbsp;&nbsp;Resistance attacks':      layers.attacks,
+      '6 &nbsp;&nbsp;Settlements':             layers.settlements
+    },
+    { collapsed: false }
+  ).addTo(map);
+
+  const all = L.featureGroup([layers.occupied, layers.resistance]);
+  map.fitBounds(all.getBounds(), { padding: [20, 20] });
+}).catch(err => {
+  document.getElementById('title').insertAdjacentHTML('beforeend',
+    '<p class="src" style="color:#b00">Could not load map data: ' +
+    esc(err.message) + '</p>');
+});
+
+/* ------------------------------------------------------------------ legend */
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = function () {
+  const div = L.DomUtil.create('div', 'legend');
+  const dots = ATTACK_CLASSES.map(c => {
+    const d = Math.round(c.radius * 2);
+    return '<div class="row"><div class="dot-cell"><span class="dot" style="width:' +
+           d + 'px;height:' + d + 'px"></span></div><span>' + c.label + '</span></div>';
+  }).join('');
+  div.innerHTML =
+    '<h2>Areas</h2>' +
+    '<div class="row"><span class="swatch" style="background:#6baed6;border:1px solid #1f78b4"></span>' +
+      '<span>Japanese-occupied territory</span></div>' +
+    '<div class="row"><span class="swatch" style="background:#e2696a;border:1px solid #e25254"></span>' +
+      '<span>Resistance areas</span></div>' +
+    '<h2>Resistance attacks</h2>' + dots +
+    '<div class="note">Circle size by attack strength (number of participants).</div>' +
+    '<h2>Settlements</h2>' +
+    '<div class="row"><div class="dot-cell"><span class="city-dot"></span></div>' +
+      '<span>Pinyin (1942 name 漢字)</span></div>';
+  L.DomEvent.disableClickPropagation(div);
+  return div;
+};
+legend.addTo(map);
+</script>
+</body>
+</html>
