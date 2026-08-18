@@ -45,16 +45,22 @@ python3 tools/enrich_settlements.py
 `tools/enrich_settlements.py` adds two fields the source layer does not carry:
 
 - `name_zh_period` — the characters the place went by around 1942. Where the
-  name has since changed outright (歸綏→呼和浩特, 石門→石家莊, 德縣→德州,
-  濰縣→濰坊, 彰德→安陽) the period form is listed explicitly; otherwise the
+  name has since changed (厚和豪特→呼和浩特, 石門→石家莊, 德縣→德州, 濰縣→濰坊,
+  威海衛→威海, 彰德→安陽) the period form is listed explicitly; otherwise the
   traditional form of `name_zh` is used, converted straight off the source
-  string rather than round-tripped.
+  string rather than round-tripped. Two of these were renamed by the occupation
+  itself: 歸綏 became 厚和豪特市 under Mengjiang in 1937, and 石家莊 became
+  石門市.
 - `name_alt` — the romanised name in general use at the time (Peking, Tientsin,
   Kalgan, Kweisui, Chefoo …), left empty where it matches the pinyin. The source
   field was empty; edit the `PERIOD` table in that script to change either field.
 
 Prefectural names abolished in 1913 (順德府, 東昌府, 沂州府) are deliberately not
-used — by 1942 those places went by their county names.
+used — by 1942 those places went by their county names. The exception is 彰德 for
+Anyang, which stayed in general use and appears on Japanese maps of the period.
+Two counties are likewise left under their better-known city names: 鄭州 was
+officially 鄭縣 from 1913 to 1948 and 徐州 was 銅山縣, but contemporary Japanese
+usage was 鄭州 and 徐州.
 
 ## Running locally
 

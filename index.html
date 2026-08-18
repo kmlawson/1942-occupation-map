@@ -118,6 +118,9 @@
   .city-label .alt { font-weight: 500; font-size: 10.5px; color: #222; }
   .hide-city-labels .leaflet-tooltip.city-label { display: none; }
 
+  /* Invisible tap targets: without this they are unpainted and so untappable. */
+  .hit-area { pointer-events: all; cursor: pointer; }
+
   .leaflet-popup-content { font-size: 13px; }
   .leaflet-popup-content b { font-size: 14px; }
   .leaflet-popup-content .zh { color: #444; }
@@ -262,6 +265,24 @@ function cityLabel(p) {
          (inner ? '<br><span class="alt">(' + esc(inner) + ')</span>' : '');
 }
 
+/* --------------------------------------------------------------- hit areas */
+// The smallest attack symbol is about 6px across — far below a fingertip, and
+// fiddly even with a mouse. Every point layer therefore gets an invisible
+// circle on top of it, no smaller than TAP_RADIUS, which carries the popup.
+// The circles are transparent, so `pointer-events: all` in the stylesheet is
+// what makes them catch the tap.
+const TAP_RADIUS = SMALL ? 15 : 9;
+
+function hitLayer(gj, onEachFeature, radiusOf) {
+  return L.geoJSON(gj, {
+    pointToLayer: (f, latlng) => L.circleMarker(latlng, {
+      radius: Math.max(TAP_RADIUS, radiusOf(f)),
+      stroke: false, fillOpacity: 0, className: 'hit-area'
+    }),
+    onEachFeature: onEachFeature
+  });
+}
+
 /* ----------------------------------------------------------------- layers  */
 const layers = {};
 const order  = ['occupied', 'resistance', 'attacks', 'settlements'];
@@ -283,29 +304,35 @@ const defs = {
   },
   attacks: {
     file: 'data/attacks.geojson',
-    build: gj => L.geoJSON(gj, {
-      pointToLayer: (f, latlng) => {
-        const c = attackClass(f.properties.strength);
-        return L.circleMarker(latlng, {
-          radius: c.radius, color: '#ffffff', weight: 1.5,
-          fillColor: '#a91315', fillOpacity: 1
-        });
-      },
-      onEachFeature: (f, lyr) => {
+    build: gj => L.layerGroup([
+      L.geoJSON(gj, {
+        interactive: false,
+        pointToLayer: (f, latlng) => {
+          const c = attackClass(f.properties.strength);
+          return L.circleMarker(latlng, {
+            radius: c.radius, color: '#ffffff', weight: 1.5,
+            fillColor: '#a91315', fillOpacity: 1, interactive: false
+          });
+        }
+      }),
+      hitLayer(gj, (f, lyr) => {
         const s = f.properties.strength;
         lyr.bindPopup('<b>Guerrilla attack</b><br>Strength: ' +
                       s.toLocaleString(), { maxWidth: 260 });
-      }
-    })
+      }, f => attackClass(f.properties.strength).radius)
+    ])
   },
   settlements: {
     file: 'data/settlements.geojson',
-    build: gj => L.geoJSON(gj, {
-      pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-        radius: 4, color: '#ffffff', weight: 1.5,
-        fillColor: '#000000', fillOpacity: 1
+    build: gj => L.layerGroup([
+      L.geoJSON(gj, {
+        interactive: false,
+        pointToLayer: (f, latlng) => L.circleMarker(latlng, {
+          radius: 4, color: '#ffffff', weight: 1.5,
+          fillColor: '#000000', fillOpacity: 1, interactive: false
+        })
       }),
-      onEachFeature: (f, lyr) => {
+      hitLayer(gj, (f, lyr) => {
         const p = f.properties;
         lyr.bindTooltip(cityLabel(p), {
           permanent: true, direction: 'top', offset: [0, -4],
@@ -319,8 +346,8 @@ const defs = {
           (p.note ? '<div class="note">' + esc(p.note) + '</div>' : ''),
           { maxWidth: 260 }
         );
-      }
-    })
+      }, () => 4)
+    ])
   }
 };
 
