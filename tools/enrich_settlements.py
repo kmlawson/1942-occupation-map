@@ -39,11 +39,11 @@ PERIOD = {
     'Qingdao':      'Tsingtao',
     'Yantai':       'Chefoo',
     'Weihai':       'Weihaiwei',
-    'Weifang':      'Weihsien',
+    'Weifang':      'Weixian',
     'Jining':       'Tsining',
     'Linqing':      'Lintsing',
     'Liaocheng':    'Tungchang',
-    'Dezhou':       'Techow',
+    'Dezhou':       'Dexian',
     'Linyi':        'Yichow',
     'Rizhao':       'Jihchao',
     'Laiwu':        'Laiwu',
@@ -51,6 +51,8 @@ PERIOD = {
 }
 # Places renamed outright under the occupation, worth spelling out for students.
 NOTE = {
+    'Weifang':      'the city of 濰坊 Weifang dates from 1948; in 1942 this was 濰縣 Weixian',
+    'Dezhou':       'known as 德縣 Dexian at the time',
     'Shijiazhuang': 'renamed 石門市 (Shihmen) in 1941 under Japanese occupation',
     'Hohhot':       'capital of Mengjiang; 歸綏 Kweisui at the time',
     'Beijing':      '北平 Peiping under the Nationalists; renamed 北京 by the occupation regime',
@@ -64,8 +66,8 @@ for f in gj['features']:
     p = f['properties']
     en = p.get('name_en') or ''
     p['name_zh_trad'] = to_trad(p.get('name_zh'))
-    if not p.get('name_alt'):
-        p['name_alt'] = PERIOD.get(en) or None
+    # PERIOD wins, so re-running the script picks up edits to the table above.
+    p['name_alt'] = PERIOD.get(en) or p.get('name_alt') or None
     p['note'] = NOTE.get(en)
 json.dump(gj, open(path, 'w'), ensure_ascii=False, separators=(',', ':'))
 for f in gj['features']:
