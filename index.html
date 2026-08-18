@@ -70,6 +70,8 @@
     border: 1.5px solid #fff; border-radius: 50%;
   }
   .legend .note { font-size: 11px; color: #666; margin-top: 6px; }
+  .legend .jp { color: #555; font-size: 11px; }
+  .legend .row > span:last-child { line-height: 1.25; }
 
   /* --- city labels ----------------------------------------------------- */
   /* Strip Leaflet's tooltip chrome so labels sit on the map as haloed text. */
@@ -106,8 +108,11 @@
     <p>The original map is 付図第五「北支那方面軍占拠地域内治安概況（昭和十七年九月中）」,
        an appendix to 防衛庁防衛研修所戦史室 編『北支の治安戦＜2＞』
        (戦史叢書 第50巻, 東京: 朝雲新聞社, 1971).</p>
-    <p>The volume has been scanned and can be read online at the National Institute
-       for Defense Studies (防衛省防衛研究所):
+    <p><a href="original/hokushi-chian-gaikyo-1942-09.jpg" target="_blank"
+          rel="noopener"><b>View the scanned original sheet</b></a>
+       (JPEG, 3768&times;3066) — the layers on this page are traced from it.</p>
+    <p>The volume has also been scanned and can be read online at the National
+       Institute for Defense Studies (防衛省防衛研究所):
        <a href="https://www.nids.mod.go.jp/military_history_search/SoshoView?kanno=050"
           target="_blank" rel="noopener">戦史叢書第050巻 北支の治安戦＜2＞</a> —
        the map itself is
@@ -221,8 +226,7 @@ const defs = {
       onEachFeature: (f, lyr) => {
         const s = f.properties.strength;
         lyr.bindPopup('<b>Resistance attack</b><br>Strength: ' +
-                      s.toLocaleString() + '<br>Class: ' +
-                      esc(attackClass(s).label));
+                      s.toLocaleString());
       }
     })
   },
@@ -266,8 +270,8 @@ Promise.all(order.map(k =>
       'Esri Satellite':  esriSatellite
     },
     {
-      '10 &nbsp;Japanese-occupied territory': layers.occupied,
-      '9 &nbsp;&nbsp;Resistance areas':        layers.resistance,
+      '10 &nbsp;Pacified areas 治安地区':      layers.occupied,
+      '9 &nbsp;&nbsp;Un-pacified areas 未治安地区': layers.resistance,
       '5 &nbsp;&nbsp;Resistance attacks':      layers.attacks,
       '6 &nbsp;&nbsp;Settlements':             layers.settlements
     },
@@ -292,11 +296,15 @@ legend.onAdd = function () {
            d + 'px;height:' + d + 'px"></span></div><span>' + c.label + '</span></div>';
   }).join('');
   div.innerHTML =
-    '<h2>Areas</h2>' +
+    '<h2>Security classification</h2>' +
     '<div class="row"><span class="swatch" style="background:#6baed6;border:1px solid #1f78b4"></span>' +
-      '<span>Japanese-occupied territory</span></div>' +
+      '<span>Pacified areas<br><span class="jp">治安地区</span></span></div>' +
     '<div class="row"><span class="swatch" style="background:#e2696a;border:1px solid #e25254"></span>' +
-      '<span>Resistance areas</span></div>' +
+      '<span>Un-pacified areas<br><span class="jp">未治安地区</span></span></div>' +
+    '<div class="row"><span class="swatch" style="background:#fff;border:1px dashed #999"></span>' +
+      '<span>Semi-pacified areas<br><span class="jp">準治安地区</span></span></div>' +
+    '<div class="note">Areas left blank — neither blue nor red — are the ' +
+      'semi-pacified third category of the original sheet.</div>' +
     '<h2>Resistance attacks</h2>' + dots +
     '<div class="note">Circle size by attack strength (number of participants).</div>' +
     '<h2>Settlements</h2>' +

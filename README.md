@@ -9,10 +9,13 @@ A small Leaflet page for students to explore four layers from the QGIS project
 
 | # in QGIS | Layer | Rendering |
 |---|---|---|
-| 10 | Japanese-occupied territory | light blue polygons |
-| 9 | Resistance areas | light red polygons |
+| 10 | Pacified areas 治安地区 | light blue polygons |
+| 9 | Un-pacified areas 未治安地区 | light red polygons |
 | 5 | Resistance attacks | dark red graduated circles, sized by `strength` |
 | 6 | Settlements | black points labelled `Pinyin (1942 name 傳統漢字)` |
+
+Areas left blank on the original sheet are its third category, semi-pacified
+areas (準治安地区), and are left unshaded here too.
 
 Base maps: CARTO Light (default), OpenStreetMap Standard, Esri World Imagery.
 
@@ -64,6 +67,9 @@ to 防衛庁防衛研修所戦史室 編『北支の治安戦＜2＞』(戦史�
 The volume has been scanned and is readable online at the National Institute for
 Defense Studies (防衛省防衛研究所):
 
+- The scanned sheet, in this repository:
+  [`original/hokushi-chian-gaikyo-1942-09.jpg`](original/hokushi-chian-gaikyo-1942-09.jpg)
+  (3768×3066) — the layers on the page are traced from it
 - Volume: [戦史叢書第050巻 北支の治安戦＜2＞](https://www.nids.mod.go.jp/military_history_search/SoshoView?kanno=050)
 - The map: [付図第五](https://www.nids.mod.go.jp/military_history_search/SoshoAppendixView?no=050&f=050_332.jpg)
 
