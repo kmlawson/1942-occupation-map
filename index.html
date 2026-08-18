@@ -257,11 +257,12 @@ function attackClass(strength) {
 const esc = s => String(s).replace(/[&<>"]/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-// Pinyin on the first line, then the characters and the romanised name the
-// place went by in 1942 on a second line, so labels stay narrow.
+// Everything on a label is the name the place went by in September 1942:
+// pinyin on the first line, then its characters and the romanised form in
+// general Western use at the time on a second, so labels stay narrow.
 function cityLabel(p) {
   const inner = [p.name_zh_period, p.name_alt].filter(Boolean).join(' ');
-  return esc(p.name_en) +
+  return esc(p.name_en_period) +
          (inner ? '<br><span class="alt">(' + esc(inner) + ')</span>' : '');
 }
 
@@ -338,11 +339,14 @@ const defs = {
           permanent: true, direction: 'top', offset: [0, -4],
           className: 'city-label', opacity: 1
         });
+        const renamed = p.name_en_period !== p.name_en;
         lyr.bindPopup(
-          '<b>' + esc(p.name_en) + '</b>' +
-          '<br><span class="zh">' + esc(p.name_zh_period) +
-          (p.name_alt ? ' ' + esc(p.name_alt) : '') +
-          '</span> <span class="zh">&mdash; in 1942</span>' +
+          '<b>' + esc(p.name_en_period) + '</b> ' +
+          '<span class="zh">' + esc(p.name_zh_period) +
+          (p.name_alt ? ' &middot; ' + esc(p.name_alt) : '') + '</span>' +
+          '<div class="note">the name in September 1942' +
+          (renamed ? '; now ' + esc(p.name_en) + ' ' + esc(p.name_zh) : '') +
+          '</div>' +
           (p.note ? '<div class="note">' + esc(p.note) + '</div>' : ''),
           { maxWidth: 260 }
         );
@@ -419,6 +423,8 @@ legend.onAdd = function () {
     '<h2>Settlements</h2>' +
     '<div class="row"><div class="dot-cell"><span class="city-dot"></span></div>' +
       '<span>Pinyin<br><span class="jp">(漢字 alt. name or romanization)</span></span></div>' +
+    '<div class="note">All three are the name the place went by in 1942; ' +
+      'click for the modern name.</div>' +
     '</div>';
   L.DomEvent.disableClickPropagation(div);
   L.DomEvent.disableScrollPropagation(div);

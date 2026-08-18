@@ -12,7 +12,7 @@ A small Leaflet page for students to explore four layers from the QGIS project
 | 10 | Pacified areas 治安地区 | light blue polygons |
 | 9 | Un-pacified areas 未治安地区 | light red polygons |
 | 5 | Guerrilla attacks | dark red graduated circles, sized by `strength` |
-| 6 | Settlements | black points labelled `Pinyin` over `(漢字 alt. name)`, both as of 1942 |
+| 6 | Settlements | black points labelled `Pinyin` over `(漢字 alt. name)`, all as of 1942 |
 
 Areas left blank on the original sheet are its third category, semi-pacified
 areas (準治安地区), and are left unshaded here too.
@@ -42,25 +42,32 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=6
 python3 tools/enrich_settlements.py
 ```
 
-`tools/enrich_settlements.py` adds two fields the source layer does not carry:
+`tools/enrich_settlements.py` adds the fields the source layer does not carry.
+Every part of a label is the name the place went by in September 1942, not the
+modern name:
 
-- `name_zh_period` — the characters the place went by around 1942. Where the
-  name has since changed (厚和豪特→呼和浩特, 石門→石家莊, 德縣→德州, 濰縣→濰坊,
-  威海衛→威海, 彰德→安陽) the period form is listed explicitly; otherwise the
-  traditional form of `name_zh` is used, converted straight off the source
-  string rather than round-tripped. Two of these were renamed by the occupation
-  itself: 歸綏 became 厚和豪特市 under Mengjiang in 1937, and 石家莊 became
-  石門市.
-- `name_alt` — the romanised name in general use at the time (Peking, Tientsin,
-  Kalgan, Kweisui, Chefoo …), left empty where it matches the pinyin. The source
-  field was empty; edit the `PERIOD` table in that script to change either field.
+- `name_en_period` — pinyin of the name in use at the time
+- `name_zh_period` — the characters in use at the time
+- `name_alt` — the romanised form in general Western use at the time, left
+  empty where it matched the pinyin
+
+Six places were called something else in 1942, two because the occupation
+renamed them: 厚和豪特 Houhehaote (Mengjiang renamed 歸綏 in October 1937; now
+呼和浩特), 石門 Shimen (石家莊 merged with 休門 under the occupation), 彰德
+Zhangde (now 安陽), 德縣 Dexian (now 德州), 濰縣 Weixian (now 濰坊) and 威海衛
+Weihaiwei (now 威海). Where the characters are unchanged the traditional form of
+`name_zh` is used, converted straight off the source string rather than
+round-tripped. The modern name is kept in `name_en` / `name_zh` and shown in the
+popup.
 
 Prefectural names abolished in 1913 (順德府, 東昌府, 沂州府) are deliberately not
-used — by 1942 those places went by their county names. The exception is 彰德 for
-Anyang, which stayed in general use and appears on Japanese maps of the period.
-Two counties are likewise left under their better-known city names: 鄭州 was
-officially 鄭縣 from 1913 to 1948 and 徐州 was 銅山縣, but contemporary Japanese
-usage was 鄭州 and 徐州.
+used — by 1942 those places went by their county names. 彰德 is the exception, as
+it stayed in general use and appears on Japanese maps of the period. Two counties
+are likewise left under their better-known city names: 鄭州 was officially 鄭縣
+from 1913 to 1948 and 徐州 was 銅山縣, but contemporary Japanese usage was 鄭州
+and 徐州.
+
+Edit the `PERIOD` table in that script and re-run it to change any of this.
 
 ## Running locally
 
