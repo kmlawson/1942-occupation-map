@@ -24,39 +24,65 @@
   }
   #map { position: absolute; inset: 0; background: #eceff1; }
 
-  /* --- title bar ------------------------------------------------------- */
-  #title {
-    position: absolute; top: 10px; left: 50px; z-index: 700;
-    max-width: min(520px, calc(100vw - 120px));
-    background: var(--panel); border-radius: 6px;
-    box-shadow: 0 1px 6px rgba(0,0,0,.3); padding: 9px 14px;
-  }
-  #title h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: .1px; }
-  #title .zh { margin: 2px 0 0; font-size: 14px; color: #444; }
-  #title .src { margin: 4px 0 0; font-size: 11.5px; color: #666; }
-  #source { margin-top: 6px; font-size: 11.5px; color: #555; }
-  #source summary {
-    cursor: pointer; color: #1f78b4; font-weight: 600;
-    list-style-position: outside;
-  }
-  #source p { margin: 6px 0 0; line-height: 1.4; }
-  #source a { color: #1f78b4; }
-
-  /* --- legend ---------------------------------------------------------- */
-  .legend {
+  /* --- collapsible panels ---------------------------------------------- */
+  .panel {
     background: var(--panel); border-radius: 6px;
     box-shadow: 0 1px 6px rgba(0,0,0,.3);
-    padding: 10px 12px; max-width: 255px; line-height: 1.35;
   }
-  .legend h2 {
-    margin: 0 0 6px; font-size: 11px; font-weight: 700;
+  .panel > summary {
+    cursor: pointer; padding: 8px 12px; list-style: none; overflow: hidden;
+    display: flex; align-items: center; gap: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .panel > summary::-webkit-details-marker { display: none; }
+  .panel > summary::after {
+    content: '▾'; margin-left: auto; color: #888; font-size: 11px;
+    transition: transform .15s;
+  }
+  .panel[open] > summary::after { transform: rotate(180deg); }
+
+  /* --- title / info panel ---------------------------------------------- */
+  #info {
+    position: absolute; top: 10px; left: 50px; z-index: 700;
+    max-width: min(520px, calc(100vw - 110px));
+  }
+  #info > summary { font-size: 15px; font-weight: 600; letter-spacing: .1px; }
+  #info > summary > span {
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #info[open] > summary > span { white-space: normal; }
+  #info .body {
+    padding: 0 12px 10px; max-height: 70vh; overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  #info .zh  { margin: 0; font-size: 14px; color: #444; }
+  #info .src { margin: 6px 0 0; font-size: 11.5px; color: #666; }
+  #info h3 {
+    margin: 12px 0 0; font-size: 11px; font-weight: 700;
     text-transform: uppercase; letter-spacing: .6px; color: #555;
   }
-  .legend h2:not(:first-child) { margin-top: 12px; }
-  .legend .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
-  .legend .swatch {
-    width: 20px; height: 12px; flex: 0 0 20px; border-radius: 2px;
+  #info .body p:not(.zh):not(.src) {
+    margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: #555;
   }
+  #info a { color: #1f78b4; }
+
+  /* --- legend ----------------------------------------------------------- */
+  .legend { max-width: 255px; line-height: 1.35; }
+  .legend > summary {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .6px; color: #555;
+  }
+  .legend .body {
+    padding: 0 12px 10px; max-height: 65vh; overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .legend h2 {
+    margin: 10px 0 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .6px; color: #555;
+  }
+  .legend h2:first-child { margin-top: 0; }
+  .legend .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+  .legend .swatch { width: 20px; height: 12px; flex: 0 0 20px; border-radius: 2px; }
   .legend .dot-cell {
     width: 20px; flex: 0 0 20px; display: flex;
     align-items: center; justify-content: center;
@@ -73,7 +99,12 @@
   .legend .jp { color: #555; font-size: 11px; }
   .legend .row > span:last-child { line-height: 1.25; }
 
-  /* --- city labels ----------------------------------------------------- */
+  /* --- layer switcher --------------------------------------------------- */
+  .leaflet-control-layers-expanded {
+    max-height: 60vh; overflow-y: auto; overscroll-behavior: contain;
+  }
+
+  /* --- city labels ------------------------------------------------------ */
   /* Strip Leaflet's tooltip chrome so labels sit on the map as haloed text. */
   .leaflet-tooltip.city-label {
     background: none; border: none; box-shadow: none;
@@ -85,27 +116,43 @@
   .leaflet-tooltip.city-label::before { display: none; }   /* no callout arrow */
   .city-label { text-align: center; line-height: 1.2; }
   .city-label .alt { font-weight: 500; font-size: 10.5px; color: #222; }
+  .hide-city-labels .leaflet-tooltip.city-label { display: none; }
 
   .leaflet-popup-content { font-size: 13px; }
   .leaflet-popup-content b { font-size: 14px; }
   .leaflet-popup-content .zh { color: #444; }
   .leaflet-popup-content .note { color: #555; font-size: 12px; margin-top: 4px; }
 
-  @media (max-width: 640px) {
-    #title { left: 10px; top: 60px; }
-    .legend { max-width: 170px; font-size: 12px; }
+  /* --- small viewports --------------------------------------------------- */
+  @media (max-width: 700px) {
+    /* Sit clear of the zoom control on the left and the layer button on the
+       right; every panel starts collapsed (set in script) so the map is not
+       buried under chrome on a phone. */
+    #info { left: 52px; right: 52px; max-width: none; }
+    #info > summary { font-size: 13.5px; padding: 7px 10px; }
+    #info .body { padding: 0 10px 9px; max-height: 60vh; }
+    .legend { max-width: min(62vw, 220px); font-size: 12px; }
+    .legend .body { max-height: 50vh; }
+    .leaflet-tooltip.city-label { font-size: 10.5px; }
+    .city-label .alt { font-size: 9.5px; }
+    .leaflet-control-layers-expanded { max-height: 50vh; }
+  }
+  @media (max-width: 380px) {
+    .legend { max-width: 58vw; }
   }
 </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="title">
-  <h1>Japanese North China Area Army Map — September 1942</h1>
-  <p class="zh">北支那方面軍占拠地域内治安概況</p>
-  <p class="src">Pan and zoom to explore. Use the layer switcher (top right) to
-     change the base map or turn layers on and off.</p>
-  <details id="source">
-    <summary>Source &amp; licence</summary>
+<details id="info" class="panel" open>
+  <summary><span>Japanese North China Area Army Map — September 1942</span></summary>
+  <div class="body">
+    <p class="zh">北支那方面軍占拠地域内治安概況</p>
+    <p class="src">Pan and zoom to explore. Use the layer switcher (top right) to
+       change the base map or turn layers on and off. Tap or click a settlement or
+       an attack for more about it. On a small screen the settlement names appear
+       once you zoom in.</p>
+    <h3>Source &amp; licence</h3>
     <p>The original map is 付図第五「北支那方面軍占拠地域内治安概況（昭和十七年九月中）」,
        an appendix to 防衛庁防衛研修所戦史室 編『北支の治安戦＜2＞』
        (戦史叢書 第50巻, 東京: 朝雲新聞社, 1971).</p>
@@ -122,16 +169,25 @@
     <p>No copyright is claimed over the original map or over this website: both are
        treated as public domain. Attribution is asked, however, for the georeferencing
        and digitisation work behind the layers shown here — Konrad M. Lawson.</p>
-  </details>
-</div>
+  </div>
+</details>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 /* ------------------------------------------------------------------ map -- */
-const map = L.map('map', { zoomControl: true, preferCanvas: false })
+// On a phone or a narrow tablet every panel starts collapsed, so the map itself
+// is not buried under chrome; on a wide screen they start open. The threshold is
+// wider than the 700px CSS breakpoint because an open panel is already in the
+// way at tablet widths, even before the compact styling kicks in.
+const SMALL = window.matchMedia('(max-width: 820px)').matches;
+document.getElementById('info').open = !SMALL;
+
+const map = L.map('map', { zoomControl: true, preferCanvas: false, tap: true })
              .setView([37.6, 115.6], 6);
 L.control.scale({ imperial: false }).addTo(map);
+L.DomEvent.disableClickPropagation(document.getElementById('info'));
+L.DomEvent.disableScrollPropagation(document.getElementById('info'));
 
 /* --------------------------------------------------------------- basemaps */
 // OSM's tile usage policy requires tile requests to carry a valid Referer,
@@ -238,7 +294,7 @@ const defs = {
       onEachFeature: (f, lyr) => {
         const s = f.properties.strength;
         lyr.bindPopup('<b>Guerrilla attack</b><br>Strength: ' +
-                      s.toLocaleString());
+                      s.toLocaleString(), { maxWidth: 260 });
       }
     })
   },
@@ -260,7 +316,8 @@ const defs = {
           '<br><span class="zh">' + esc(p.name_zh_period) +
           (p.name_alt ? ' ' + esc(p.name_alt) : '') +
           '</span> <span class="zh">&mdash; in 1942</span>' +
-          (p.note ? '<div class="note">' + esc(p.note) + '</div>' : '')
+          (p.note ? '<div class="note">' + esc(p.note) + '</div>' : ''),
+          { maxWidth: 260 }
         );
       }
     })
@@ -287,27 +344,40 @@ Promise.all(order.map(k =>
       'Guerrilla attacks':           layers.attacks,
       'Settlements':                 layers.settlements
     },
-    { collapsed: false }
+    { collapsed: SMALL }
   ).addTo(map);
 
   const all = L.featureGroup([layers.occupied, layers.resistance]);
   map.fitBounds(all.getBounds(), { padding: [20, 20] });
+  updateLabelVisibility();
 }).catch(err => {
-  document.getElementById('title').insertAdjacentHTML('beforeend',
-    '<p class="src" style="color:#b00">Could not load map data: ' +
+  const info = document.getElementById('info');
+  info.open = true;
+  info.querySelector('.body').insertAdjacentHTML('beforeend',
+    '<p style="color:#b00">Could not load map data: ' +
     esc(err.message) + '</p>');
 });
+
+/* On a small screen the settlement labels collide at the zoom that fits the
+   whole theatre, so they are held back until the reader zooms in. */
+function updateLabelVisibility() {
+  map.getContainer().classList.toggle('hide-city-labels',
+                                      SMALL && map.getZoom() < 6);
+}
+map.on('zoomend', updateLabelVisibility);
 
 /* ------------------------------------------------------------------ legend */
 const legend = L.control({ position: 'bottomright' });
 legend.onAdd = function () {
-  const div = L.DomUtil.create('div', 'legend');
+  const div = L.DomUtil.create('details', 'legend panel');
+  if (!SMALL) div.open = true;
   const dots = ATTACK_CLASSES.map(c => {
     const d = Math.round(c.radius * 2);
     return '<div class="row"><div class="dot-cell"><span class="dot" style="width:' +
            d + 'px;height:' + d + 'px"></span></div><span>' + c.label + '</span></div>';
   }).join('');
   div.innerHTML =
+    '<summary>Legend</summary><div class="body">' +
     '<h2>Security classification</h2>' +
     '<div class="row"><span class="swatch" style="background:#6baed6;border:1px solid #1f78b4"></span>' +
       '<span>Pacified areas<br><span class="jp">治安地区</span></span></div>' +
@@ -321,8 +391,10 @@ legend.onAdd = function () {
     '<div class="note">Circle size by attack strength (number of participants).</div>' +
     '<h2>Settlements</h2>' +
     '<div class="row"><div class="dot-cell"><span class="city-dot"></span></div>' +
-      '<span>Pinyin<br><span class="jp">(漢字 alt. name or romanization)</span></span></div>';
+      '<span>Pinyin<br><span class="jp">(漢字 alt. name or romanization)</span></span></div>' +
+    '</div>';
   L.DomEvent.disableClickPropagation(div);
+  L.DomEvent.disableScrollPropagation(div);
   return div;
 };
 legend.addTo(map);
