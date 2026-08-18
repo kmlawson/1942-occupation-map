@@ -12,7 +12,7 @@ A small Leaflet page for students to explore four layers from the QGIS project
 | 10 | Pacified areas 治安地区 | light blue polygons |
 | 9 | Un-pacified areas 未治安地区 | light red polygons |
 | 5 | Resistance attacks | dark red graduated circles, sized by `strength` |
-| 6 | Settlements | black points labelled `Pinyin (1942 name 傳統漢字)` |
+| 6 | Settlements | black points labelled `Pinyin (Alt. name or romanization 傳統漢字)` |
 
 Areas left blank on the original sheet are its third category, semi-pacified
 areas (準治安地区), and are left unshaded here too.
