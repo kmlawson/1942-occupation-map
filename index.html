@@ -83,7 +83,8 @@
                  0 0 2px #fff, 0 0 2px #fff;
   }
   .leaflet-tooltip.city-label::before { display: none; }   /* no callout arrow */
-  .city-label .alt { font-weight: 500; color: #222; }
+  .city-label { text-align: center; line-height: 1.2; }
+  .city-label .alt { font-weight: 500; font-size: 10.5px; color: #222; }
 
   .leaflet-popup-content { font-size: 13px; }
   .leaflet-popup-content b { font-size: 14px; }
@@ -197,11 +198,12 @@ function attackClass(strength) {
 const esc = s => String(s).replace(/[&<>"]/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-// "Pinyin (alternative name or romanization 傳統漢字)" — the alt name is the
-// form the place went by in 1942, the hanzi are in traditional characters.
+// Pinyin on the first line, then the characters and the romanised name the
+// place went by in 1942 on a second line, so labels stay narrow.
 function cityLabel(p) {
-  const inner = [p.name_alt, p.name_zh_trad].filter(Boolean).join(' ');
-  return esc(p.name_en) + (inner ? ' <span class="alt">(' + esc(inner) + ')</span>' : '');
+  const inner = [p.name_zh_period, p.name_alt].filter(Boolean).join(' ');
+  return esc(p.name_en) +
+         (inner ? '<br><span class="alt">(' + esc(inner) + ')</span>' : '');
 }
 
 /* ----------------------------------------------------------------- layers  */
@@ -250,15 +252,14 @@ const defs = {
       onEachFeature: (f, lyr) => {
         const p = f.properties;
         lyr.bindTooltip(cityLabel(p), {
-          permanent: true, direction: 'right', offset: [7, 0],
+          permanent: true, direction: 'top', offset: [0, -4],
           className: 'city-label', opacity: 1
         });
         lyr.bindPopup(
           '<b>' + esc(p.name_en) + '</b>' +
-          (p.name_alt ? ' &middot; ' + esc(p.name_alt) : '') +
-          '<br><span class="zh">' + esc(p.name_zh_trad) +
-          (p.name_zh && p.name_zh !== p.name_zh_trad ? ' / ' + esc(p.name_zh) : '') +
-          '</span>' +
+          '<br><span class="zh">' + esc(p.name_zh_period) +
+          (p.name_alt ? ' ' + esc(p.name_alt) : '') +
+          '</span> <span class="zh">&mdash; in 1942</span>' +
           (p.note ? '<div class="note">' + esc(p.note) + '</div>' : '')
         );
       }
@@ -320,7 +321,7 @@ legend.onAdd = function () {
     '<div class="note">Circle size by attack strength (number of participants).</div>' +
     '<h2>Settlements</h2>' +
     '<div class="row"><div class="dot-cell"><span class="city-dot"></span></div>' +
-      '<span>Pinyin (Alt. name or romanization 漢字)</span></div>';
+      '<span>Pinyin<br><span class="jp">(漢字 alt. name or romanization)</span></span></div>';
   L.DomEvent.disableClickPropagation(div);
   return div;
 };

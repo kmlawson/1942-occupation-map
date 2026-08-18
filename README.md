@@ -12,7 +12,7 @@ A small Leaflet page for students to explore four layers from the QGIS project
 | 10 | Pacified areas 治安地区 | light blue polygons |
 | 9 | Un-pacified areas 未治安地区 | light red polygons |
 | 5 | Guerrilla attacks | dark red graduated circles, sized by `strength` |
-| 6 | Settlements | black points labelled `Pinyin (Alt. name or romanization 傳統漢字)` |
+| 6 | Settlements | black points labelled `Pinyin` over `(漢字 alt. name)`, both as of 1942 |
 
 Areas left blank on the original sheet are its third category, semi-pacified
 areas (準治安地区), and are left unshaded here too.
@@ -44,11 +44,17 @@ python3 tools/enrich_settlements.py
 
 `tools/enrich_settlements.py` adds two fields the source layer does not carry:
 
-- `name_zh_trad` — traditional-character form of `name_zh` (the source mixes
-  simplified and traditional, so conversion runs straight off the source string).
-- `name_alt` — the name the place went by around 1942, in the Chinese Postal Map
-  romanisation then in general use (Peking, Tientsin, Kalgan, Kweisui, …). The
-  source field was empty; edit the `PERIOD` table in that script to change them.
+- `name_zh_period` — the characters the place went by around 1942. Where the
+  name has since changed outright (歸綏→呼和浩特, 石門→石家莊, 德縣→德州,
+  濰縣→濰坊, 彰德→安陽) the period form is listed explicitly; otherwise the
+  traditional form of `name_zh` is used, converted straight off the source
+  string rather than round-tripped.
+- `name_alt` — the romanised name in general use at the time (Peking, Tientsin,
+  Kalgan, Kweisui, Chefoo …), left empty where it matches the pinyin. The source
+  field was empty; edit the `PERIOD` table in that script to change either field.
+
+Prefectural names abolished in 1913 (順德府, 東昌府, 沂州府) are deliberately not
+used — by 1942 those places went by their county names.
 
 ## Running locally
 
