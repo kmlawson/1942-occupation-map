@@ -12,6 +12,8 @@ A small Leaflet page for students to explore four layers from the QGIS project
 | 10 | Pacified areas 治安地区 | light blue polygons |
 | 9 | Un-pacified areas 未治安地区 | light red polygons |
 | 5 | Guerrilla attacks | dark red graduated circles, sized by `strength` |
+| — | Damage to transportation routes 交通線匪害 | orange-red triangles |
+| — | Damage to communication lines 通信線匪害 | crimson diamonds |
 | 6 | Settlements | black points labelled `Pinyin` over `(漢字 alt. name)`, all as of 1942 |
 
 Areas left blank on the original sheet are its third category, semi-pacified
@@ -39,6 +41,10 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=6
   data/resistance-areas.geojson "$G/resistance-area-1942.gpkg" resistanceareas1942map
 ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=6 \
   data/japanese-occupied.geojson "$G/Japanese Occupied Territory/japna-occupied-1942-map.gpkg" japanoccupied1942
+ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=6 \
+  data/damage-transport.geojson "$G/damage-transport-lines-1942.gpkg" damagetransport
+ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=6 \
+  data/damage-communication.geojson "$G/damage-communication.gpkg" damagecommunication
 python3 tools/enrich_settlements.py
 ```
 

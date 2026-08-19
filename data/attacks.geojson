@@ -116,6 +116,7 @@
 { "type": "Feature", "properties": { "strength": 1500 }, "geometry": { "type": "Point", "coordinates": [ 118.739871, 37.228481 ] } },
 { "type": "Feature", "properties": { "strength": 100 }, "geometry": { "type": "Point", "coordinates": [ 118.656404, 37.214489 ] } },
 { "type": "Feature", "properties": { "strength": 100 }, "geometry": { "type": "Point", "coordinates": [ 118.432362, 37.371756 ] } },
-{ "type": "Feature", "properties": { "strength": 200 }, "geometry": { "type": "Point", "coordinates": [ 117.41319, 39.920509 ] } }
+{ "type": "Feature", "properties": { "strength": 200 }, "geometry": { "type": "Point", "coordinates": [ 117.41319, 39.920509 ] } },
+{ "type": "Feature", "properties": { "strength": 100 }, "geometry": { "type": "Point", "coordinates": [ 115.469809, 39.281121 ] } }
 ]
 }

@@ -41,30 +41,48 @@
   }
   .panel[open] > summary::after { transform: rotate(180deg); }
 
-  /* --- title / info panel ---------------------------------------------- */
-  #info {
+  /* --- title box --------------------------------------------------------- */
+  #title {
     position: absolute; top: 10px; left: 50px; z-index: 700;
-    max-width: min(520px, calc(100vw - 110px));
+    max-width: min(520px, calc(100vw - 110px)); padding: 8px 12px;
   }
-  #info > summary { font-size: 15px; font-weight: 600; letter-spacing: .1px; }
-  #info > summary > span {
-    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  #title h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: .1px; }
+  #title .zh { margin: 2px 0 0; font-size: 13.5px; color: #444; }
+
+  /* --- about lightbox ---------------------------------------------------- */
+  #about-backdrop {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0,0,0,.45);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
   }
-  #info[open] > summary > span { white-space: normal; }
-  #info .body {
-    padding: 0 12px 10px; max-height: 70vh; overflow-y: auto;
-    overscroll-behavior: contain;
+  #about-backdrop[hidden] { display: none; }
+  #about {
+    position: relative; max-width: 560px; width: 100%;
+    max-height: min(80vh, 720px); overflow-y: auto; overscroll-behavior: contain;
+    background: #fff; padding: 20px 22px 22px;
+    box-shadow: 0 6px 30px rgba(0,0,0,.35);
   }
-  #info .zh  { margin: 0; font-size: 14px; color: #444; }
-  #info .src { margin: 6px 0 0; font-size: 11.5px; color: #666; }
-  #info h3 {
-    margin: 12px 0 0; font-size: 11px; font-weight: 700;
+  #about h2 { margin: 0 44px 10px 0; font-size: 17px; font-weight: 600; }
+  #about h3 {
+    margin: 16px 0 0; font-size: 11px; font-weight: 700;
     text-transform: uppercase; letter-spacing: .6px; color: #555;
   }
-  #info .body p:not(.zh):not(.src) {
-    margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: #555;
+  #about p { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: #333; }
+  #about p.credit { color: #777; font-size: 11.5px; margin-top: 16px; }
+  #about a { color: #1f78b4; }
+  #about-close {
+    position: absolute; top: 8px; right: 10px;
+    border: 0; background: none; cursor: pointer;
+    font-size: 26px; line-height: 1; color: #888; padding: 4px 8px;
   }
-  #info a { color: #1f78b4; }
+  #about-close:hover { color: #333; }
+
+  .about-btn {
+    display: block; width: 100%; margin-top: 12px; padding: 6px 8px;
+    font: inherit; font-size: 12px; color: #1f78b4; cursor: pointer;
+    background: #fff; border: 1px solid #d3d7db; border-radius: 4px;
+  }
+  .about-btn:hover { background: #f3f6f8; }
 
   /* --- legend ----------------------------------------------------------- */
   .legend { max-width: 255px; line-height: 1.35; }
@@ -121,6 +139,10 @@
   /* Invisible tap targets: without this they are unpainted and so untappable. */
   .hit-area { pointer-events: all; cursor: pointer; }
 
+  /* Shape markers: drop Leaflet's default white box behind a divIcon. */
+  .shape-icon { background: none; border: 0; cursor: pointer; }
+  .shape-icon svg, .legend .dot-cell svg { display: block; }
+
   .leaflet-popup-content { font-size: 13px; }
   .leaflet-popup-content b { font-size: 14px; }
   .leaflet-popup-content .zh { color: #444; }
@@ -131,9 +153,12 @@
     /* Sit clear of the zoom control on the left and the layer button on the
        right; every panel starts collapsed (set in script) so the map is not
        buried under chrome on a phone. */
-    #info { left: 52px; right: 52px; max-width: none; }
-    #info > summary { font-size: 13.5px; padding: 7px 10px; }
-    #info .body { padding: 0 10px 9px; max-height: 60vh; }
+    #title { left: 52px; right: 52px; max-width: none; padding: 7px 10px; }
+    #title h1 { font-size: 13px; }
+    #title .zh { font-size: 12.5px; }
+    #about { padding: 16px 16px 18px; max-height: 84vh; }
+    #about h2 { font-size: 15.5px; }
+    #about p { font-size: 12.5px; }
     .legend { max-width: min(62vw, 220px); font-size: 12px; }
     .legend .body { max-height: 50vh; }
     .leaflet-tooltip.city-label { font-size: 10.5px; }
@@ -147,21 +172,30 @@
 </head>
 <body>
 <div id="map"></div>
-<details id="info" class="panel" open>
-  <summary><span>Japanese North China Area Army Map — September 1942</span></summary>
-  <div class="body">
-    <p class="zh">北支那方面軍占拠地域内治安概況</p>
-    <p class="src">Pan and zoom to explore. Use the layer switcher (top right) to
-       change the base map or turn layers on and off. Tap or click a settlement or
-       an attack for more about it. On a small screen the settlement names appear
-       once you zoom in.</p>
-    <h3>Source &amp; licence</h3>
-    <p>The original map is 付図第五「北支那方面軍占拠地域内治安概況（昭和十七年九月中）」,
-       an appendix to 防衛庁防衛研修所戦史室 編『北支の治安戦＜2＞』
+<div id="title" class="panel">
+  <h1>Japanese North China Area Army Map — September 1942</h1>
+  <p class="zh">北支那方面軍占拠地域内治安概況</p>
+</div>
+
+<div id="about-backdrop" hidden>
+  <div id="about" class="panel" role="dialog" aria-modal="true" aria-labelledby="about-h">
+    <button id="about-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="about-h">About this map</h2>
+    <p>The layers here are traced from 付図第五
+       「北支那方面軍占拠地域内治安概況（昭和十七年九月中）」, an appendix to
+       防衛庁防衛研修所戦史室 編『北支の治安戦＜2＞』
        (戦史叢書 第50巻, 東京: 朝雲新聞社, 1971).</p>
+    <p>The sheet divides the occupied north into pacified areas (治安地区), shown
+       in blue, un-pacified areas (未治安地区), shown in red, and the semi-pacified
+       areas (準治安地区) it leaves blank. Guerrilla attacks are sized by the
+       strength reported for them, and the two damage layers mark reported damage
+       to transportation routes (交通線匪害) and communication lines (通信線匪害).
+       Settlements are labelled with the name each place went by in 1942 — click
+       one for its modern name.</p>
+    <h3>Source</h3>
     <p><a href="original/hokushi-chian-gaikyo-1942-09.jpg" target="_blank"
           rel="noopener"><b>View the scanned original sheet</b></a>
-       (JPEG, 3768&times;3066) — the layers on this page are traced from it.</p>
+       (JPEG, 3768&times;3066).</p>
     <p>The volume has also been scanned and can be read online at the National
        Institute for Defense Studies (防衛省防衛研究所):
        <a href="https://www.nids.mod.go.jp/military_history_search/SoshoView?kanno=050"
@@ -169,11 +203,13 @@
        the map itself is
        <a href="https://www.nids.mod.go.jp/military_history_search/SoshoAppendixView?no=050&amp;f=050_332.jpg"
           target="_blank" rel="noopener">付図第五</a>.</p>
+    <h3>Licence</h3>
     <p>No copyright is claimed over the original map or over this website: both are
        treated as public domain. Attribution is asked, however, for the georeferencing
        and digitisation work behind the layers shown here — Konrad M. Lawson.</p>
+    <p class="credit">Base maps &copy; OpenStreetMap contributors, CARTO and Esri.</p>
   </div>
-</details>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -184,13 +220,33 @@
 // wider than the 700px CSS breakpoint because an open panel is already in the
 // way at tablet widths, even before the compact styling kicks in.
 const SMALL = window.matchMedia('(max-width: 820px)').matches;
-document.getElementById('info').open = !SMALL;
+// The legend stays open at any size that has room for it, which is a lower bar
+// than the layer switcher needs.
+const LEGEND_OPEN = window.matchMedia('(min-width: 701px)').matches;
 
 const map = L.map('map', { zoomControl: true, preferCanvas: false, tap: true })
              .setView([37.6, 115.6], 6);
 L.control.scale({ imperial: false }).addTo(map);
-L.DomEvent.disableClickPropagation(document.getElementById('info'));
-L.DomEvent.disableScrollPropagation(document.getElementById('info'));
+L.DomEvent.disableClickPropagation(document.getElementById('title'));
+
+/* ------------------------------------------------------------------- about */
+const backdrop = document.getElementById('about-backdrop');
+let lastFocus = null;
+
+function openAbout() {
+  lastFocus = document.activeElement;
+  backdrop.hidden = false;
+  document.getElementById('about-close').focus();
+}
+function closeAbout() {
+  backdrop.hidden = true;
+  if (lastFocus) lastFocus.focus();
+}
+document.getElementById('about-close').addEventListener('click', closeAbout);
+backdrop.addEventListener('click', e => { if (e.target === backdrop) closeAbout(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !backdrop.hidden) closeAbout();
+});
 
 /* --------------------------------------------------------------- basemaps */
 // OSM's tile usage policy requires tile requests to carry a valid Referer,
@@ -266,6 +322,40 @@ function cityLabel(p) {
          (inner ? '<br><span class="alt">(' + esc(inner) + ')</span>' : '');
 }
 
+/* ------------------------------------------------------------ shape markers */
+// The damage layers are drawn as triangles and diamonds so they stay apart
+// from the attack circles at a glance, in two further shades of the same red.
+const DAMAGE = {
+  transport: {
+    file:  'data/damage-transport.geojson',
+    shape: 'triangle', color: '#e34a33',
+    en:    'Damage to transportation routes', ja: '交通線匪害'
+  },
+  communication: {
+    file:  'data/damage-communication.geojson',
+    shape: 'diamond',  color: '#c9184a',
+    en:    'Damage to communication lines',   ja: '通信線匪害'
+  }
+};
+const SHAPE_PX = 11;
+
+function shapePoints(shape, box, size) {
+  const c = box / 2, r = size / 2;
+  return shape === 'triangle'
+    // sits on its base, optically centred on the point
+    ? [c, c - r * 1.05, c + r * 1.1, c + r * 0.8, c - r * 1.1, c + r * 0.8]
+    : [c, c - r, c + r, c, c, c + r, c - r, c];
+}
+
+function shapeSvg(shape, color, size, box) {
+  const pts = shapePoints(shape, box, size);
+  const pairs = [];
+  for (let i = 0; i < pts.length; i += 2) pairs.push(pts[i] + ',' + pts[i + 1]);
+  return '<svg width="' + box + '" height="' + box + '" viewBox="0 0 ' + box +
+         ' ' + box + '"><polygon points="' + pairs.join(' ') + '" fill="' + color +
+         '" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+}
+
 /* --------------------------------------------------------------- hit areas */
 // The smallest attack symbol is about 6px across — far below a fingertip, and
 // fiddly even with a mouse. Every point layer therefore gets an invisible
@@ -286,7 +376,28 @@ function hitLayer(gj, onEachFeature, radiusOf) {
 
 /* ----------------------------------------------------------------- layers  */
 const layers = {};
-const order  = ['occupied', 'resistance', 'attacks', 'settlements'];
+const order  = ['occupied', 'resistance', 'attacks',
+                'transport', 'communication', 'settlements'];
+
+// The icon box is no smaller than a fingertip, so the shape carries its own
+// tap target without needing a separate hit layer.
+function damageDef(key) {
+  const d = DAMAGE[key];
+  const box = Math.max(SHAPE_PX, TAP_RADIUS * 2);
+  const icon = L.divIcon({
+    className: 'shape-icon', iconSize: [box, box],
+    html: shapeSvg(d.shape, d.color, SHAPE_PX, box)
+  });
+  return {
+    file: d.file,
+    build: gj => L.geoJSON(gj, {
+      pointToLayer: (f, latlng) => L.marker(latlng, { icon: icon, keyboard: false }),
+      onEachFeature: (f, lyr) => lyr.bindPopup(
+        '<b>' + d.en + '</b><br><span class="zh">' + d.ja + '</span>',
+        { maxWidth: 260 })
+    })
+  };
+}
 
 const defs = {
   occupied: {
@@ -323,6 +434,8 @@ const defs = {
       }, f => attackClass(f.properties.strength).radius)
     ])
   },
+  transport:     damageDef('transport'),
+  communication: damageDef('communication'),
   settlements: {
     file: 'data/settlements.geojson',
     build: gj => L.layerGroup([
@@ -373,6 +486,8 @@ Promise.all(order.map(k =>
       'Pacified areas 治安地区':      layers.occupied,
       'Un-pacified areas 未治安地区': layers.resistance,
       'Guerrilla attacks':           layers.attacks,
+      'Damage to transport 交通線匪害': layers.transport,
+      'Damage to communications 通信線匪害': layers.communication,
       'Settlements':                 layers.settlements
     },
     { collapsed: SMALL }
@@ -382,10 +497,8 @@ Promise.all(order.map(k =>
   map.fitBounds(all.getBounds(), { padding: [20, 20] });
   updateLabelVisibility();
 }).catch(err => {
-  const info = document.getElementById('info');
-  info.open = true;
-  info.querySelector('.body').insertAdjacentHTML('beforeend',
-    '<p style="color:#b00">Could not load map data: ' +
+  document.getElementById('title').insertAdjacentHTML('beforeend',
+    '<p class="zh" style="color:#b00">Could not load map data: ' +
     esc(err.message) + '</p>');
 });
 
@@ -401,7 +514,7 @@ map.on('zoomend', updateLabelVisibility);
 const legend = L.control({ position: 'bottomright' });
 legend.onAdd = function () {
   const div = L.DomUtil.create('details', 'legend panel');
-  if (!SMALL) div.open = true;
+  if (LEGEND_OPEN) div.open = true;
   const dots = ATTACK_CLASSES.map(c => {
     const d = Math.round(c.radius * 2);
     return '<div class="row"><div class="dot-cell"><span class="dot" style="width:' +
@@ -420,12 +533,21 @@ legend.onAdd = function () {
       'semi-pacified third category of the original sheet.</div>' +
     '<h2>Guerrilla attacks</h2>' + dots +
     '<div class="note">Circle size by attack strength (number of participants).</div>' +
+    '<h2>Damage reported</h2>' +
+    Object.keys(DAMAGE).map(function (k) {
+      const d = DAMAGE[k];
+      return '<div class="row"><div class="dot-cell">' +
+             shapeSvg(d.shape, d.color, 11, 16) + '</div>' +
+             '<span>' + d.en + '<br><span class="jp">' + d.ja + '</span></span></div>';
+    }).join('') +
     '<h2>Settlements</h2>' +
     '<div class="row"><div class="dot-cell"><span class="city-dot"></span></div>' +
       '<span>Pinyin<br><span class="jp">(漢字 alt. name or romanization)</span></span></div>' +
     '<div class="note">All three are the name the place went by in 1942; ' +
       'click for the modern name.</div>' +
+    '<button type="button" class="about-btn" id="about-open">About this map</button>' +
     '</div>';
+  div.querySelector('#about-open').addEventListener('click', openAbout);
   L.DomEvent.disableClickPropagation(div);
   L.DomEvent.disableScrollPropagation(div);
   return div;
