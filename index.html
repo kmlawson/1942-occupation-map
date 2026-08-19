@@ -16,7 +16,7 @@
     --ink:           #1a1a1a;
     --panel:         rgba(255,255,255,.94);
   }
-  html, body { height: 100%; margin: 0; }
+  html, body { height: 100%; margin: 0; accent-color: #1f78b4; }
   body {
     font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI",
           "Helvetica Neue", "Hiragino Sans", "Noto Sans CJK SC", sans-serif;
@@ -118,6 +118,13 @@
   .legend .row > span:last-child { line-height: 1.25; }
 
   /* --- layer switcher --------------------------------------------------- */
+  /* Checkboxes and radios follow the OS accent colour unless told otherwise,
+     which lands on green on many machines; pin them to the map's blue. */
+  .leaflet-control-layers input[type="checkbox"],
+  .leaflet-control-layers input[type="radio"],
+  .about-btn { accent-color: #1f78b4; }
+  .leaflet-control-layers input:focus-visible,
+  .about-btn:focus-visible { outline: 2px solid #1f78b4; outline-offset: 1px; }
   .leaflet-control-layers-expanded {
     max-height: 60vh; overflow-y: auto; overscroll-behavior: contain;
   }
@@ -328,16 +335,16 @@ function cityLabel(p) {
 const DAMAGE = {
   transport: {
     file:  'data/damage-transport.geojson',
-    shape: 'triangle', color: '#e34a33',
+    shape: 'triangle', color: '#f4795b',
     en:    'Damage to transportation routes', ja: '交通線匪害'
   },
   communication: {
     file:  'data/damage-communication.geojson',
-    shape: 'diamond',  color: '#c9184a',
+    shape: 'diamond',  color: '#e8607f',
     en:    'Damage to communication lines',   ja: '通信線匪害'
   }
 };
-const SHAPE_PX = 11;
+const SHAPE_PX = 8;
 
 function shapePoints(shape, box, size) {
   const c = box / 2, r = size / 2;
@@ -353,7 +360,7 @@ function shapeSvg(shape, color, size, box) {
   for (let i = 0; i < pts.length; i += 2) pairs.push(pts[i] + ',' + pts[i + 1]);
   return '<svg width="' + box + '" height="' + box + '" viewBox="0 0 ' + box +
          ' ' + box + '"><polygon points="' + pairs.join(' ') + '" fill="' + color +
-         '" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+         '" stroke="#ffffff" stroke-width="1.1" stroke-linejoin="round"/></svg>';
 }
 
 /* --------------------------------------------------------------- hit areas */
@@ -537,7 +544,7 @@ legend.onAdd = function () {
     Object.keys(DAMAGE).map(function (k) {
       const d = DAMAGE[k];
       return '<div class="row"><div class="dot-cell">' +
-             shapeSvg(d.shape, d.color, 11, 16) + '</div>' +
+             shapeSvg(d.shape, d.color, 9, 14) + '</div>' +
              '<span>' + d.en + '<br><span class="jp">' + d.ja + '</span></span></div>';
     }).join('') +
     '<h2>Settlements</h2>' +

@@ -12,8 +12,8 @@ A small Leaflet page for students to explore four layers from the QGIS project
 | 10 | Pacified areas 治安地区 | light blue polygons |
 | 9 | Un-pacified areas 未治安地区 | light red polygons |
 | 5 | Guerrilla attacks | dark red graduated circles, sized by `strength` |
-| — | Damage to transportation routes 交通線匪害 | orange-red triangles |
-| — | Damage to communication lines 通信線匪害 | crimson diamonds |
+| — | Damage to transportation routes 交通線匪害 | small light-red triangles |
+| — | Damage to communication lines 通信線匪害 | small light-crimson diamonds |
 | 6 | Settlements | black points labelled `Pinyin` over `(漢字 alt. name)`, all as of 1942 |
 
 Areas left blank on the original sheet are its third category, semi-pacified
