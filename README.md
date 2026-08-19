@@ -14,10 +14,15 @@ A small Leaflet page for students to explore four layers from the QGIS project
 | 5 | Guerrilla attacks | dark red graduated circles, sized by `strength` |
 | — | Damage to transportation routes 交通線匪害 | small light-red triangles |
 | — | Damage to communication lines 通信線匪害 | small light-crimson diamonds |
+| — | Manchukuo 満洲国 (1935) | darker blue polygon, off by default |
+| — | Kwantung Leased Territory 関東州 (1935) | darkest blue polygon, off by default |
 | 6 | Settlements | black points labelled `Pinyin` over `(漢字 alt. name)`, all as of 1942 |
 
 Areas left blank on the original sheet are its third category, semi-pacified
 areas (準治安地区), and are left unshaded here too.
+
+Manchukuo and the Kwantung Leased Territory are drawn from separate 1935
+GeoPackages rather than from this sheet, and are off until switched on.
 
 Base maps: CARTO Light (default), OpenStreetMap Standard, Esri World Imagery.
 
@@ -45,6 +50,10 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=6
   data/damage-transport.geojson "$G/damage-transport-lines-1942.gpkg" damagetransport
 ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=6 \
   data/damage-communication.geojson "$G/damage-communication.gpkg" damagecommunication
+ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=5 \
+  data/manchukuo.geojson "$G/manchukuo-1935.gpkg" manchukuo
+ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco RFC7946=YES -lco COORDINATE_PRECISION=5 \
+  data/kwantung.geojson "$G/kwantung-leased-territory-1935.gpkg" kwantungleasedterritory1935
 python3 tools/enrich_settlements.py
 ```
 

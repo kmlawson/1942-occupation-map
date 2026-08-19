@@ -91,7 +91,8 @@
     text-transform: uppercase; letter-spacing: .6px; color: #555;
   }
   .legend .body {
-    padding: 0 12px 10px; max-height: 65vh; overflow-y: auto;
+    /* leaves room for the layer switcher in the corner above on a short window */
+    padding: 0 12px 10px; max-height: 58vh; overflow-y: auto;
     overscroll-behavior: contain;
   }
   .legend h2 {
@@ -238,6 +239,9 @@ const LEGEND_OPEN = window.matchMedia('(min-width: 701px)').matches;
 
 const map = L.map('map', { zoomControl: true, preferCanvas: false, tap: true })
              .setView([37.6, 115.6], 6);
+// Optional territory outlines belong under the security-classification
+// polygons, whichever order they get switched on in.
+map.createPane('territories').style.zIndex = 350;
 L.control.scale({ imperial: false }).addTo(map);
 L.DomEvent.disableClickPropagation(document.getElementById('title'));
 
@@ -388,7 +392,7 @@ function hitLayer(gj, onEachFeature, radiusOf) {
 
 /* ----------------------------------------------------------------- layers  */
 const layers = {};
-const order  = ['occupied', 'resistance', 'attacks',
+const order  = ['manchukuo', 'kwantung', 'occupied', 'resistance', 'attacks',
                 'transport', 'communication', 'settlements'];
 
 // The icon box is no smaller than a fingertip, so the shape carries its own
@@ -446,6 +450,25 @@ const defs = {
       }, f => attackClass(f.properties.strength).radius)
     ])
   },
+  // 1935 boundaries, off unless the reader asks for them
+  manchukuo: {
+    file: 'data/manchukuo.geojson',
+    off:  true,
+    build: gj => L.geoJSON(gj, {
+      pane: 'territories',
+      style: { color: '#08519c', weight: 1, fillColor: '#4292c6', fillOpacity: 0.4 }
+    }).bindPopup('<b>Manchukuo</b><br><span class="zh">満洲国</span>' +
+                 '<div class="note">boundaries as of 1935</div>', { maxWidth: 260 })
+  },
+  kwantung: {
+    file: 'data/kwantung.geojson',
+    off:  true,
+    build: gj => L.geoJSON(gj, {
+      pane: 'territories',
+      style: { color: '#08306b', weight: 1, fillColor: '#2171b5', fillOpacity: 0.5 }
+    }).bindPopup('<b>Kwantung Leased Territory</b><br><span class="zh">関東州</span>' +
+                 '<div class="note">boundaries as of 1935</div>', { maxWidth: 260 })
+  },
   transport:     damageDef('transport'),
   communication: damageDef('communication'),
   settlements: {
@@ -485,7 +508,8 @@ Promise.all(order.map(k =>
     .then(r => { if (!r.ok) throw new Error(defs[k].file + ': ' + r.status); return r.json(); })
     .then(gj => { layers[k] = defs[k].build(gj); })
 )).then(() => {
-  order.forEach(k => layers[k].addTo(map));   // drawn bottom to top
+  // drawn bottom to top; the optional territories stay off until switched on
+  order.filter(k => !defs[k].off).forEach(k => layers[k].addTo(map));
 
   L.control.layers(
     {
@@ -500,7 +524,9 @@ Promise.all(order.map(k =>
       'Guerrilla attacks':           layers.attacks,
       'Damage to transport 交通線匪害': layers.transport,
       'Damage to communications 通信線匪害': layers.communication,
-      'Settlements':                 layers.settlements
+      'Settlements':                 layers.settlements,
+      'Manchukuo 満洲国 (1935)':        layers.manchukuo,
+      'Kwantung Leased Territory 関東州 (1935)': layers.kwantung
     },
     { collapsed: SMALL }
   ).addTo(map);
@@ -557,6 +583,13 @@ legend.onAdd = function () {
       '<span>Pinyin<br><span class="jp">(漢字 alt. name or romanization)</span></span></div>' +
     '<div class="note">All three are the name the place went by in 1942; ' +
       'click for the modern name.</div>' +
+    '<h2>Optional territories</h2>' +
+    '<div class="row"><span class="swatch" style="background:#4292c6;border:1px solid #08519c"></span>' +
+      '<span>Manchukuo<br><span class="jp">満洲国</span></span></div>' +
+    '<div class="row"><span class="swatch" style="background:#2171b5;border:1px solid #08306b"></span>' +
+      '<span>Kwantung Leased Territory<br><span class="jp">関東州</span></span></div>' +
+    '<div class="note">Off by default; 1935 boundaries. Switch them on in the ' +
+      'layer list.</div>' +
     '<button type="button" class="about-btn" id="about-open">About this map</button>' +
     '</div>';
   div.querySelector('#about-open').addEventListener('click', openAbout);
